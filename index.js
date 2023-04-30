@@ -75,9 +75,47 @@ class Player {
   }
 }
 
+//need to create a projectile class
+class Projectile {
+  //set dynamically, thus need to pass a contructor argument
+  constructor({ position, velocity }) {
+    (this.position = position),
+      //this could be something to help make a power-up
+      (this.velocity = velocity),
+      (this.radius = 3);
+  }
+
+  draw() {
+    context.beginPath();
+    context.arc(this.position.x, this.position.y, this.radius, 0, Math.PI * 2);
+
+    context.fillStyle = "red";
+    context.fill();
+    context.closePath();
+  }
+
+  update() {
+    this.draw();
+    this.position.x += this.velocity.x;
+    this.position.y += this.velocity.y;
+  }
+}
+
 //we noticed, the image never showed up.
 //Why? It takes time to load.
 const player = new Player();
+const projectiles = [
+  new Projectile({
+    position: {
+      x: 300,
+      y: 300,
+    },
+    velocity: {
+      x: 0,
+      y: -2,
+    },
+  }),
+];
 
 const keys = {
   a: {
@@ -101,6 +139,11 @@ function animate() {
   //filling background
   context.fillStyle = "#f6d7b0";
   context.fillRect(0, 0, canvas.width, canvas.height);
+
+  //will animate projectiles
+  projectiles.forEach((projectile) => {
+    projectile.update();
+  });
 
   //drawging image
   player.update();
