@@ -130,8 +130,17 @@ function animate() {
   context.fillRect(0, 0, canvas.width, canvas.height);
 
   //will animate projectiles
-  projectiles.forEach((projectile) => {
-    projectile.update();
+  projectiles.forEach((projectile, index) => {
+    //garbage collector, gets rid of projectileswhen they leave view height
+    if (projectile.position.y + projectile.radius <= 0) {
+      //to elimate projectiles flashing
+      //1 additional frame before splie out, prevents flash from occuring
+      setTimeout(() => {
+        projectiles.splice(index, 1);
+      }, 0);
+    } else {
+      projectile.update();
+    }
   });
 
   //drawging image
