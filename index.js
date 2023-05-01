@@ -18,7 +18,7 @@ class Player {
 
     //this.image =
     const image = new Image();
-    image.src = "./Images/Appa-OG.png";
+    image.src = "./Images/Appa_Saddle.png";
 
     //will listen for when image fully loads
     //when it does, will set the properties of image to these
@@ -89,7 +89,7 @@ class Projectile {
     context.beginPath();
     context.arc(this.position.x, this.position.y, this.radius, 0, Math.PI * 2);
 
-    context.fillStyle = "red";
+    context.fillStyle = "green";
     context.fill();
     context.closePath();
   }
@@ -104,18 +104,7 @@ class Projectile {
 //we noticed, the image never showed up.
 //Why? It takes time to load.
 const player = new Player();
-const projectiles = [
-  new Projectile({
-    position: {
-      x: 300,
-      y: 300,
-    },
-    velocity: {
-      x: 0,
-      y: -2,
-    },
-  }),
-];
+const projectiles = [];
 
 const keys = {
   a: {
@@ -166,15 +155,24 @@ animate();
 addEventListener("keydown", ({ key }) => {
   switch (key) {
     case "a":
-      console.log("left");
       keys.a.pressed = true;
       break;
     case "d":
-      console.log("right");
       keys.d.pressed = true;
       break;
-    case " ":
-      console.log("space");
+    case "ArrowUp":
+      projectiles.push(
+        new Projectile({
+          position: {
+            x: player.position.x + player.width / 2,
+            y: player.position.y,
+          },
+          velocity: {
+            x: 0,
+            y: -2,
+          },
+        })
+      );
   }
 });
 
@@ -184,18 +182,13 @@ addEventListener("keydown", ({ key }) => {
 addEventListener("keyup", ({ key }) => {
   switch (key) {
     case "a":
-      console.log("left");
       keys.a.pressed = false;
       player.sway = 0;
-      console.log(player.sway);
       break;
     case "d":
-      console.log("right");
       keys.d.pressed = false;
       player.sway = 0;
-      console.log(player.sway);
       break;
     case " ":
-      console.log("space");
   }
 });
