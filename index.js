@@ -101,6 +101,31 @@ class Projectile {
   }
 }
 
+//will show explosions when projectile hts enemy
+class Particle {
+  constructor({ position, velocity, radius, color }) {
+    (this.position = position),
+      (this.velocity = velocity),
+      (this.radius = radius);
+    this.color = color;
+  }
+
+  draw() {
+    context.beginPath();
+    context.arc(this.position.x, this.position.y, this.radius, 0, Math.PI * 2);
+
+    context.fillStyle = this.color;
+    context.fill();
+    context.closePath();
+  }
+
+  update() {
+    this.draw();
+    this.position.x += this.velocity.x;
+    this.position.y += this.velocity.y;
+  }
+}
+
 class BadGuy {
   constructor({ position }) {
     //for moving around
@@ -248,6 +273,7 @@ const player = new Player();
 const projectiles = [];
 const grids = [];
 const badGuyProjectiles = [];
+const particles = [];
 
 const keys = {
   a: {
@@ -278,7 +304,7 @@ function animate() {
   context.fillStyle = "#f6d7b0";
   context.fillRect(0, 0, canvas.width, canvas.height);
 
-  //
+  //gris of badGuys
   grids.forEach((grid, gIndex) => {
     grid.update();
 
@@ -324,8 +350,30 @@ function animate() {
               return projectile2 === projectile;
             });
 
+            //when enemies explode, these are the colors we want to see
+            let colors = ["#aad53f", "#f42604", "#7f7f74"];
+
             //need to remove projectile and BadGuy
             if (badGuyFound && projectileFound) {
+              for (i = 0; i < 15; i++) {
+                let colorKey = i % 3;
+                let currColor = colors[colorKey];
+
+                particles.push(
+                  new Particle({
+                    position: {
+                      x: badGuy.position.x + badGuy.width / 2,
+                      y: badGuy.position.y + badGuy.height / 2,
+                    },
+                    velocity: {
+                      x: (Math.random() - 0.5) * 2,
+                      y: (Math.random() - 0.5) * 2,
+                    },
+                    radius: Math.random() * 2,
+                    color: currColor,
+                  })
+                );
+              }
               grid.badGuyGroup.splice(bgIndex, 1);
               projectiles.splice(pIndex, 1);
 
@@ -385,11 +433,16 @@ function animate() {
       player.position.y;
     let betweenPlayerWidth =
       badGuyProjectile.position.x + badGuyProjectile.width >=
-        player.position.x &&
-      badGuyProjectile.position.x <= player.position.x + player.width;
+        player.position.x + 40 &&
+      badGuyProjectile.position.x <= player.position.x + player.width - 40;
     if (topOfPlayer & betweenPlayerWidth) {
       console.log("hit");
     }
+  });
+
+  //renders particles
+  particles.forEach((particle) => {
+    particle.update();
   });
 
   //drawging image
