@@ -146,6 +146,45 @@ class BadGuy {
       this.position.y += velocity.y;
     }
   }
+
+  shoot(badGuyProjectiles) {
+    badGuyProjectiles.push(
+      new BadGuyProjectile({
+        //places projectiles in bottom-middle
+        position: {
+          x: this.position.x + this.width / 2,
+          y: this.position.y + this.height,
+        },
+        velocity: {
+          x: 0,
+          y: 3,
+        },
+      })
+    );
+  }
+}
+
+//need to create a projectile class
+class BadGuyProjectile {
+  //set dynamically, thus need to pass a contructor argument
+  constructor({ position, velocity }) {
+    (this.position = position),
+      //this could be something to help make a power-up
+      (this.velocity = velocity),
+      (this.width = 6);
+    this.height = 10;
+  }
+
+  draw() {
+    context.fillStyle = "white";
+    context.fillRect(this.position.x, this.position.y, this.width, this.height);
+  }
+
+  update() {
+    this.draw();
+    this.position.x += this.velocity.x;
+    this.position.y += this.velocity.y;
+  }
 }
 
 class Grid {
@@ -208,6 +247,7 @@ class Grid {
 const player = new Player();
 const projectiles = [];
 const grids = [];
+const badGuyProjectiles = [];
 
 const keys = {
   a: {
@@ -241,9 +281,18 @@ function animate() {
   //
   grids.forEach((grid, gIndex) => {
     grid.update();
+
+    //spawn projectiles shot by enemies
+    if (frames % 300 === 0 && grid.badGuyGroup.length > 0) {
+      selectedBadGuy =
+        grid.badGuyGroup[Math.floor(Math.random() * grid.badGuyGroup.length)];
+      selectedBadGuy.shoot(badGuyProjectiles);
+    }
+
     grid.badGuyGroup.forEach((badGuy, bgIndex) => {
       badGuy.update({ velocity: grid.velocity });
 
+      //collision detection logic
       projectiles.forEach((projectile, pIndex) => {
         //detects for colision
         //checks if top of projectile reaches bottom of badGuy
@@ -314,6 +363,32 @@ function animate() {
       }, 0);
     } else {
       projectile.update();
+    }
+  });
+
+  //badGuyProjectiles
+  badGuyProjectiles.forEach((badGuyProjectile, index) => {
+    if (
+      badGuyProjectile.position.y + badGuyProjectile.height >=
+      canvas.height
+    ) {
+      setTimeout(() => {
+        badGuyProjectiles.splice(index, 1);
+      }, 0);
+    } else {
+      badGuyProjectile.update();
+    }
+
+    //if bottom of projectile >= player.height, that is a hit
+    let topOfPlayer =
+      badGuyProjectile.position.y + badGuyProjectile.height >=
+      player.position.y;
+    let betweenPlayerWidth =
+      badGuyProjectile.position.x + badGuyProjectile.width >=
+        player.position.x &&
+      badGuyProjectile.position.x <= player.position.x + player.width;
+    if (topOfPlayer & betweenPlayerWidth) {
+      console.log("hit");
     }
   });
 
