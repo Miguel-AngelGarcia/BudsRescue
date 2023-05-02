@@ -166,7 +166,7 @@ class BadGuy {
     //will listen for when image fully loads
     //when it does, will set the properties of image to these
     image.onload = () => {
-      const scale = 0.5;
+      const scale = 0.4;
       this.image = image;
       this.width = image.width * scale;
       this.height = image.height * scale;
@@ -256,8 +256,6 @@ class Grid {
     //looping to create bad guys, minimum of 2 rows
     let rows = Math.floor(Math.random() * 4) + 2;
     let columns = Math.floor(Math.random() * 6) + 5;
-    //test
-    columns = 1;
 
     this.width = columns * 70;
     this.height = rows * 55;
@@ -336,7 +334,7 @@ let game = {
   active: true,
 };
 let score = 0;
-let highScore = 0;
+let highScore = highScoreElement.innerHTML;
 
 function setScore(score) {
   //should increase score with each enemy eliminated
@@ -347,7 +345,12 @@ function loseCondition() {
   setTimeout(() => {
     game.active = false;
     gameOverScreen.classList.remove("hidden");
-  }, 2000);
+
+    highScore = highScoreElement.innerHTML;
+    if (score > highScore) {
+      highScoreElement.innerHTML = score;
+    }
+  }, 1000);
 }
 
 function createParticles({ character, colors }) {
@@ -471,7 +474,6 @@ function animate() {
                   }
                 });
                 grid.bottomMostLevel = lowestRowY;
-                console.log(lowestRowY);
                 //removes grid if empty
               } else {
                 grids.splice(gIndex, 1);
@@ -484,30 +486,12 @@ function animate() {
       //what if badGuy reaches bottom? -> lose
       //bottom of badGuy
       let badGuyBottom = grid.bottomMostLevel;
-      console.log(badGuyBottom);
       //console.log(playerHeight, playerLeft, playerRight);
 
       let badGuyReachesGround = badGuyBottom >= canvas.height;
 
       if (badGuyReachesGround) {
-        setTimeout(() => {
-          console.log("lose LOSE LOSE LOSE");
-          console.log("height:", badGuyReachesGround);
-          console.log(bgIndex, badGuyHeight, badGuyLeft, badGuyRight);
-
-          player.opacity = 0;
-          game.over = true;
-        }, 0);
-
         loseCondition();
-        createParticles({
-          character: player,
-          colors: playerColors,
-        });
-        createParticles({
-          character: badGuy,
-          colors: badGuyColors,
-        });
       }
     });
   });
@@ -557,8 +541,8 @@ function animate() {
         game.over = true;
       }, 0);
 
-      //after 2 seconds, games will stop animating
-      loseCondition();
+      //after 1 second, games will stop animating
+      loseCondition(2000);
 
       createParticles({
         character: player,
@@ -587,7 +571,7 @@ function animate() {
 
   if (keys.a.pressed && player.position.x + 38 >= 0) {
     player.velocity.x = -4;
-    player.sway = -0.2; //test 83
+    player.sway = -0.2;
   } else if (keys.d.pressed && player.position.x + 87 <= canvas.width) {
     player.velocity.x = 4;
     player.sway = 0.2;
@@ -660,14 +644,12 @@ const resetGame = function () {
     active: true,
   };
 
-  if (score > highScore) {
-    highScoreElement.innerHTML = score;
-  }
-
   score = 0;
-  setScore(score);
+
+  player.image.onload();
 
   player.opacity = 1;
+
   projectiles.length = 0;
   grids.length = 0;
   badGuyProjectiles.length = 0;
