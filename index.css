@@ -23,6 +23,10 @@ body {
   margin-top: 10px;
   font-size: 24px;
 }
+
+.score p {
+  margin: 0;
+}
 .gameOverContainer {
   display: flex;
   height: 576px;
@@ -39,6 +43,11 @@ body {
   font-weight: 600;
   color: red;
   transform: rotate(-15deg);
+}
+
+.againBtn {
+  position: absolute;
+  margin-top: 100px;
 }
 
 .gameOverOverlay {

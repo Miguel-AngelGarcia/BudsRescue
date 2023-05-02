@@ -3,13 +3,22 @@
 <html>
   <link rel="stylesheet" href="index.css" />
   <div class="container">
-    <p class="score">
-      <span> Score: </span>
-      <span id="score"> 0 </span>
-    </p>
+    <div class="score">
+      <p class="">
+        <span> High Score: </span>
+        <span id="highScore"> 0 </span>
+      </p>
+      <p class="">
+        <span> Score: </span>
+        <span id="currScore"> 0 </span>
+      </p>
+    </div>
+
     <div class="gameOverContainer hidden">
       <div class="gameOverStyle">Game Over</div>
+
       <div class="gameOverOverlay"></div>
+      <button class="againBtn">Again</button>
     </div>
 
     <canvas></canvas>

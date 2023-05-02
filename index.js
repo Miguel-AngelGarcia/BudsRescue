@@ -1,6 +1,8 @@
 const canvas = document.querySelector("canvas");
-const scoreElement = document.getElementById("score");
+const currScoreElement = document.getElementById("currScore");
+const highScoreElement = document.getElementById("highScore");
 const gameOverScreen = document.querySelector(".gameOverContainer");
+const playAgainBtn = document.querySelector(".againBtn");
 
 const context = canvas.getContext("2d");
 
@@ -254,9 +256,13 @@ class Grid {
     //looping to create bad guys, minimum of 2 rows
     let rows = Math.floor(Math.random() * 4) + 2;
     let columns = Math.floor(Math.random() * 6) + 5;
+    //test
+    columns = 1;
 
     this.width = columns * 70;
+    this.height = rows * 55;
 
+    this.bottomMostLevel = this.position.y + this.height;
     for (let xAxis = 0; xAxis < columns; xAxis++) {
       for (let yAxis = 0; yAxis < rows; yAxis++) {
         this.badGuyGroup.push(
@@ -276,6 +282,9 @@ class Grid {
   update() {
     this.position.x += this.velocity.x;
     this.position.y += this.velocity.y;
+
+    //want to see if grid bottom touches bottom of page
+    this.bottomMostLevel += this.velocity.y;
 
     //effects movement per frame
     //we saw that instead of going down x pixels, it just drops down completely
@@ -316,19 +325,36 @@ const keys = {
 //
 
 let frames = 0;
-let randomInterval = Math.floor(Math.random() * 1000 + 500);
+let randomInterval = 0;
+setRandomInterval();
+
+function setRandomInterval() {
+  randomInterval = Math.floor(Math.random() * 1000 + 500);
+}
 let game = {
   over: false,
   active: true,
 };
 let score = 0;
+let highScore = 0;
+
+function setScore(score) {
+  //should increase score with each enemy eliminated
+  currScoreElement.innerHTML = score;
+}
+
+function loseCondition() {
+  setTimeout(() => {
+    game.active = false;
+    gameOverScreen.classList.remove("hidden");
+  }, 2000);
+}
 
 function createParticles({ character, colors }) {
   //when enemies explode, these are the colors we want to see
   for (i = 0; i < 15; i++) {
     let colorKey = i % 3;
     let currColor = colors[colorKey];
-
     particles.push(
       new Particle({
         position: {
@@ -349,6 +375,10 @@ function createParticles({ character, colors }) {
 //to address issue, we use this animation loop
 //this will update our image continously
 function animate() {
+  //colors we want to display on explosions
+  let badGuyColors = ["#aad53f", "#f42604", "#7f7f74"];
+  let playerColors = ["#964B00", "#e4d4c8", "#5A5A5A"];
+
   //will not animate after player death
   if (!game.active) return;
 
@@ -372,7 +402,7 @@ function animate() {
     grid.badGuyGroup.forEach((badGuy, bgIndex) => {
       badGuy.update({ velocity: grid.velocity });
 
-      //collision detection logic
+      //collision detection logic for projectiles
       projectiles.forEach((projectile, pIndex) => {
         //detects for colision
         //checks if top of projectile reaches bottom of badGuy
@@ -404,14 +434,11 @@ function animate() {
               return projectile2 === projectile;
             });
 
-            //when enemies explode, these are the colors we want to see
-            let badGuyColors = ["#aad53f", "#f42604", "#7f7f74"];
-
             //need to remove projectile and BadGuy
             if (badGuyFound && projectileFound) {
               score += 100;
               //should increase score with each enemy eliminated
-              scoreElement.innerHTML = score;
+              setScore(score);
 
               createParticles({
                 character: badGuy,
@@ -433,6 +460,18 @@ function animate() {
                   leftMostBadGuy.position.x +
                   rightMostBadGuy.width;
                 grid.position.x = leftMostBadGuy.position.x;
+
+                let lowestRowY = 0;
+                const groupSoFar = grid.badGuyGroup;
+
+                groupSoFar.forEach((badGuyRemaining) => {
+                  let badGuyBottom = badGuyRemaining.position.y;
+                  if (badGuyBottom > lowestRowY) {
+                    lowestRowY = badGuyBottom + 55;
+                  }
+                });
+                grid.bottomMostLevel = lowestRowY;
+                console.log(lowestRowY);
                 //removes grid if empty
               } else {
                 grids.splice(gIndex, 1);
@@ -441,6 +480,35 @@ function animate() {
           }, 0);
         }
       });
+
+      //what if badGuy reaches bottom? -> lose
+      //bottom of badGuy
+      let badGuyBottom = grid.bottomMostLevel;
+      console.log(badGuyBottom);
+      //console.log(playerHeight, playerLeft, playerRight);
+
+      let badGuyReachesGround = badGuyBottom >= canvas.height;
+
+      if (badGuyReachesGround) {
+        setTimeout(() => {
+          console.log("lose LOSE LOSE LOSE");
+          console.log("height:", badGuyReachesGround);
+          console.log(bgIndex, badGuyHeight, badGuyLeft, badGuyRight);
+
+          player.opacity = 0;
+          game.over = true;
+        }, 0);
+
+        loseCondition();
+        createParticles({
+          character: player,
+          colors: playerColors,
+        });
+        createParticles({
+          character: badGuy,
+          colors: badGuyColors,
+        });
+      }
     });
   });
 
@@ -471,8 +539,6 @@ function animate() {
       badGuyProjectile.update();
     }
 
-    let playerColors = ["#964B00", "#e4d4c8", "#5A5A5A"];
-
     //if bottom of projectile >= player.height, that is a hit
     let topOfPlayer =
       badGuyProjectile.position.y + badGuyProjectile.height >=
@@ -492,10 +558,7 @@ function animate() {
       }, 0);
 
       //after 2 seconds, games will stop animating
-      setTimeout(() => {
-        game.active = false;
-        gameOverScreen.classList.remove("hidden");
-      }, 2000);
+      loseCondition();
 
       createParticles({
         character: player,
@@ -522,10 +585,10 @@ function animate() {
   //drawging image
   player.update();
 
-  if (keys.a.pressed && player.position.x + 43 >= 0) {
+  if (keys.a.pressed && player.position.x + 38 >= 0) {
     player.velocity.x = -4;
-    player.sway = -0.2;
-  } else if (keys.d.pressed && player.position.x + 83 <= canvas.width) {
+    player.sway = -0.2; //test 83
+  } else if (keys.d.pressed && player.position.x + 87 <= canvas.width) {
     player.velocity.x = 4;
     player.sway = 0.2;
   } else {
@@ -535,7 +598,7 @@ function animate() {
   //spawn enemies at every n frames
   if (frames % randomInterval === 0) {
     grids.push(new Grid());
-    randomInterval = Math.floor(Math.random() * 1000 + 500);
+    setRandomInterval();
     //might get weird values if we let frames go unchecked
     //set it to 0, will still let grid go down
     frames = 0;
@@ -590,3 +653,29 @@ addEventListener("keyup", ({ key }) => {
       keys.ArrowUp.pressed = false;
   }
 });
+
+const resetGame = function () {
+  game = {
+    over: false,
+    active: true,
+  };
+
+  if (score > highScore) {
+    highScoreElement.innerHTML = score;
+  }
+
+  score = 0;
+  setScore(score);
+
+  player.opacity = 1;
+  projectiles.length = 0;
+  grids.length = 0;
+  badGuyProjectiles.length = 0;
+  particles.length = 0;
+
+  gameOverScreen.classList.add("hidden");
+  setRandomInterval();
+  animate();
+};
+
+playAgainBtn.addEventListener("click", resetGame);
