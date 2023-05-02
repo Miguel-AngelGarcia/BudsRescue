@@ -1,9 +1,19 @@
 <!--canvas element-->
-<style>
-  body {
-    margin: 0;
-  }
-</style>
-<canvas></canvas>
+<!DOCTYPE html>
+<html>
+  <link rel="stylesheet" href="index.css" />
+  <div class="container">
+    <p class="score">
+      <span> Score: </span>
+      <span id="score"> 0 </span>
+    </p>
+    <div class="gameOverContainer hidden">
+      <div class="gameOverStyle">Game Over</div>
+      <div class="gameOverOverlay"></div>
+    </div>
 
-<script src="./index.js"></script>
+    <canvas></canvas>
+  </div>
+
+  <script src="./index.js"></script>
+</html>

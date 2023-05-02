@@ -1,0 +1,53 @@
+body {
+  margin: 0;
+  font-family: sans-serif;
+  display: flex;
+  /*
+  needed to give height of 100vh 
+  or else align items would not work
+  */
+  height: 100vh;
+  justify-content: center;
+  align-items: center;
+}
+
+.container {
+  position: relative;
+}
+
+.score {
+  position: absolute;
+  z-index: 10;
+  color: white;
+  margin-left: 10px;
+  margin-top: 10px;
+  font-size: 24px;
+}
+.gameOverContainer {
+  display: flex;
+  height: 576px;
+  width: 1024px;
+  position: absolute;
+  justify-content: center;
+  align-items: center;
+}
+.gameOverStyle {
+  font-size: 140px;
+  opacity: 1;
+  position: absolute;
+  font-style: oblique;
+  font-weight: 600;
+  color: red;
+  transform: rotate(-15deg);
+}
+
+.gameOverOverlay {
+  background-color: dimgrey;
+  height: inherit;
+  width: inherit;
+  opacity: 0.4;
+}
+
+.hidden {
+  display: none;
+}
