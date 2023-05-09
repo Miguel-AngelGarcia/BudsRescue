@@ -70,7 +70,7 @@ class Player {
       this.image,
       this.position.x,
       this.position.y,
-      this.height,
+      this.width,
       this.height
     );
 
@@ -184,7 +184,7 @@ class BadGuy {
       this.image,
       this.position.x,
       this.position.y,
-      this.height,
+      this.width,
       this.height
     );
   }
@@ -297,13 +297,113 @@ class Grid {
   }
 }
 
+//will be our background image
+class Park {
+  constructor(startPosition) {
+    this.position = {
+      x: 0,
+      y: startPosition - 576,
+    };
+
+    this.originalPostition = startPosition;
+
+    this.scrollSpeed = 1;
+    //this.image =
+    const image = new Image();
+    image.src = "./Images/parktest.png";
+
+    //dimensions2048px x 2034px
+    //we can w = w, and canvas height = 1/2 park
+    image.onload = () => {
+      let scale = 0.5;
+      this.image = image;
+      this.width = image.width * scale;
+      this.height = image.height * scale;
+    };
+  }
+
+  draw() {
+    context.drawImage(
+      this.image,
+      this.position.x,
+      this.position.y,
+      this.width,
+      this.height
+    );
+  }
+
+  update() {
+    if (this.image) {
+      this.draw();
+      if (this.position.y == canvas.height) {
+        this.position.y = -canvas.height + 1;
+        //added the above +1 because we got a weird line between frames without this
+      } else {
+        this.position.y += this.scrollSpeed;
+      }
+    }
+  }
+}
+
+//will show explosions when projectile hts enemy
+class BackgroundButterfly {
+  constructor({ position, velocity, colorNumber }) {
+    this.position = position;
+    this.velocity = velocity;
+
+    this.colorNumber = colorNumber;
+    this.opacity = 1;
+
+    //this.image =
+    const butterflyImage = new Image();
+    let butterflyImageName = `./Images/Butterfly${colorNumber}.png`;
+    butterflyImage.src = butterflyImageName;
+
+    this.opacity = 1;
+
+    //will listen for when image fully loads
+    //when it does, will set the properties of image to these
+    butterflyImage.onload = () => {
+      const scale = 0.25;
+      this.image = butterflyImage;
+      this.width = butterflyImage.width * scale;
+      this.height = butterflyImage.height * scale;
+    };
+  }
+
+  draw() {
+    context.drawImage(
+      this.image,
+      this.position.x,
+      this.position.y,
+      this.width,
+      this.height
+    );
+  }
+
+  update() {
+    if (this.image) {
+      this.draw();
+      this.position.x += this.velocity.x;
+      this.position.y += this.velocity.y;
+    }
+  }
+  /*
+    did this to fade out particles
+    we saw them disappear but then reappear. Go to animate and work on particles 
+    */
+}
+
 //we noticed, the image never showed up.
 //Why? It takes time to load.
 const player = new Player();
+const background = new Park(canvas.height);
+const background2 = new Park(0);
 const projectiles = [];
 const grids = [];
 const badGuyProjectiles = [];
 const particles = [];
+const backgroundButterflies = [];
 
 const keys = {
   a: {
@@ -318,6 +418,24 @@ const keys = {
     pressed: false,
   },
 };
+
+//creates background butterflies
+for (let q = 0; q < 12; q++) {
+  let butterflyColor = (q % 4) + 1;
+  backgroundButterflies.push(
+    new BackgroundButterfly({
+      position: {
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+      },
+      velocity: {
+        x: 0,
+        y: 01,
+      },
+      colorNumber: butterflyColor,
+    })
+  );
+}
 
 //we want the grid to spawn at different intervals
 //
@@ -355,7 +473,7 @@ function loseCondition() {
 
 function createParticles({ character, colors }) {
   //when enemies explode, these are the colors we want to see
-  for (i = 0; i < 15; i++) {
+  for (let i = 0; i < 15; i++) {
     let colorKey = i % 3;
     let currColor = colors[colorKey];
     particles.push(
@@ -388,8 +506,20 @@ function animate() {
   requestAnimationFrame(animate);
 
   //filling background
-  context.fillStyle = "#f6d7b0";
+  context.fillStyle = "#8ac362";
   context.fillRect(0, 0, canvas.width, canvas.height);
+
+  background.update();
+  background2.update();
+
+  //background butterflies
+  backgroundButterflies.forEach((backgroundButterfly, bgbIndex) => {
+    if (backgroundButterfly.position.y > canvas.height) {
+      backgroundButterfly.position.x = Math.random() * canvas.width;
+      backgroundButterfly.position.y = -backgroundButterfly.height;
+    }
+    backgroundButterfly.update();
+  });
 
   //grid of badGuys
   grids.forEach((grid, gIndex) => {
