@@ -310,7 +310,7 @@ class Park {
     this.scrollSpeed = 1;
     //this.image =
     const image = new Image();
-    image.src = "./Images/parktest.png";
+    image.src = "./Images/park3.png";
 
     //dimensions2048px x 2034px
     //we can w = w, and canvas height = 1/2 park
