@@ -254,7 +254,7 @@ class Grid {
     this.badGuyGroup = [];
 
     //looping to create bad guys, minimum of 2 rows
-    let rows = Math.floor(Math.random() * 4) + 2;
+    let rows = Math.floor(Math.random() * 3) + 2;
     let columns = Math.floor(Math.random() * 6) + 5;
 
     this.width = columns * 70;
@@ -354,6 +354,10 @@ class BackgroundButterfly {
     this.colorNumber = colorNumber;
     this.opacity = 1;
 
+    //defining flight bath, left to right, for butterflies
+    this.flightPathLeft = position.x - Math.floor(Math.random() * 20);
+    this.flightPathRight = position.x + Math.floor(Math.random() * 20);
+
     //this.image =
     const butterflyImage = new Image();
     let butterflyImageName = `./Images/Butterfly${colorNumber}.png`;
@@ -371,6 +375,14 @@ class BackgroundButterfly {
     };
   }
 
+  //when butterfly reaches bottom, it will get randomly places at top
+  //this helps update the flight bath so it continues going left to right
+  //without this, butterfly will become static
+  updateFlightPath() {
+    this.flightPathLeft = this.position.x - Math.floor(Math.random() * 20);
+    this.flightPathRight = this.position.x + Math.floor(Math.random() * 20);
+  }
+
   draw() {
     context.drawImage(
       this.image,
@@ -386,6 +398,14 @@ class BackgroundButterfly {
       this.draw();
       this.position.x += this.velocity.x;
       this.position.y += this.velocity.y;
+
+      //we want the butterflies to flight left to right
+      if (
+        this.position.x >= this.flightPathRight ||
+        this.position.x <= this.flightPathLeft
+      ) {
+        this.velocity.x = -this.velocity.x;
+      }
     }
   }
   /*
@@ -420,7 +440,7 @@ const keys = {
 };
 
 //creates background butterflies
-for (let q = 0; q < 12; q++) {
+for (let q = 0; q < 16; q++) {
   let butterflyColor = (q % 4) + 1;
   backgroundButterflies.push(
     new BackgroundButterfly({
@@ -429,7 +449,7 @@ for (let q = 0; q < 12; q++) {
         y: Math.random() * canvas.height,
       },
       velocity: {
-        x: 0,
+        x: -0.2,
         y: 01,
       },
       colorNumber: butterflyColor,
@@ -517,6 +537,8 @@ function animate() {
     if (backgroundButterfly.position.y > canvas.height) {
       backgroundButterfly.position.x = Math.random() * canvas.width;
       backgroundButterfly.position.y = -backgroundButterfly.height;
+      backgroundButterfly.updateFlightPath();
+      //backgroundButterflies.splice(bgbIndex, 0, new BackgroundButterfly());
     }
     backgroundButterfly.update();
   });
